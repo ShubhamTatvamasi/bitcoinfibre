@@ -8,6 +8,7 @@
 #include "hash.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
+#include "streams.h"
 
 std::string COutPoint::ToString() const
 {
@@ -79,7 +80,12 @@ uint256 CTransaction::ComputeWitnessHash() const
 CTransaction::CTransaction() : nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0), hash(), m_witness_hash() {}
 // Note that hash MUST be init'd before GetWitnessHash as it calls GetHash() if there is no witness
 CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime), hash(ComputeHash()), m_witness_hash(ComputeWitnessHash()) {}
-CTransaction::CTransaction(CMutableTransaction &&tx) : nVersion(tx.nVersion), vin(std::move(tx.vin)), vout(std::move(tx.vout)), nLockTime(tx.nLockTime), hash(ComputeHash()), m_witness_hash(ComputeWitnessHash()) {}
+CTransaction::CTransaction(CMutableTransaction &&tx, bool fCache) : nVersion(tx.nVersion), vin(std::move(tx.vin)), vout(std::move(tx.vout)), nLockTime(tx.nLockTime), hash(ComputeHash()), m_witness_hash(ComputeWitnessHash()) {
+    if (fCache) {
+        VectorOutputStream stream(&encodedForm, SER_NETWORK, PROTOCOL_VERSION);
+        Serialize(stream);
+    }
+}
 
 CAmount CTransaction::GetValueOut() const
 {
