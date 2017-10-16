@@ -640,6 +640,7 @@ public:
     bool fFeeler; // If true this node is being used as a short lived feeler.
     bool fOneShot;
     bool m_manual_connection;
+    bool fConnect; // FOR Matt's FIBRE SERVERS: Used to skip trickle logic on -connect nodes
     bool fClient;
     const bool fInbound;
     std::atomic_bool fSuccessfullyConnected;

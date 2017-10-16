@@ -1712,7 +1712,12 @@ void CConnman::ThreadOpenConnections()
             for (const std::string& strAddr : gArgs.GetArgs("-connect"))
             {
                 CAddress addr(CService(), NODE_NONE);
-                OpenNetworkConnection(addr, false, nullptr, strAddr.c_str());
+                if (OpenNetworkConnection(addr, false, nullptr, strAddr.c_str())) {
+                    LOCK(cs_vNodes);
+                    for (CNode* pnode : vNodes)
+                        if (!pnode->fInbound && pnode->addrName == strAddr)
+                            pnode->fConnect = true; // Dirty hack to skip tx trickle
+                }
                 for (int i = 0; i < 10 && i < nLoop; i++)
                 {
                     if (!interruptNet.sleep_for(std::chrono::milliseconds(500)))
